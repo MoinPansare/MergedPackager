@@ -1,0 +1,18 @@
+FROM pritunl/archlinux:2018-08-11
+
+# Update, and install basic packages.
+RUN pacman -S --needed --noconfirm python2 git curl gcc gcc-libs make
+
+# depot_tools uses python2 instead of python3.
+RUN ln -sf python2 /usr/bin/python
+
+# Install depot_tools.
+WORKDIR /
+RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+ENV PATH /depot_tools:$PATH
+
+# Clang needs libtinfo.so.5 which is not available on ArchLinux.
+ENV GYP_DEFINES='clang=0'
+
+# Build and run this docker by mapping shaka-packager with
+# -v "shaka-packager:/shaka-packager".

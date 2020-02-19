@@ -1,0 +1,104 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+bear-320x240.webm - WebM encode of bear.1280x720.mp4 resized to 320x240.
+bear-320x240-vp9-opus.webm - Same as above, but with vp9 and opus codec.
+bear-320x240-vp9-altref.webm - Same as above, but enabled altref:
+  ffmpeg -i bear-320x180.mp4 -c:v libvpx-vp9 -pass 1 -threads 8 -speed 4 \
+    -frame-parallel 1 -an -f webm /dev/null
+  ffmpeg -i bear-320x180.mp4 -c:v libvpx-vp9 -pass 2 -threads 8 -speed 1 \
+    -frame-parallel 1 -auto-alt-ref 1 -lag-in-frames 25 -an -f webm \
+    bear-320x240-vp9-altref.webm
+no_streams.webm - Header, Info, & Tracks element from bear-320x240.webm slightly corrupted so it looks
+                  like there are no tracks.
+nonzero-start-time.webm - Has the same headers as bear-320x240.webm but the first cluster of this file
+                          is the second cluster of bear-320x240.webm. This creates the situation where
+                          the media data doesn't start at time 0.
+bear-320x240-live.webm - bear-320x240.webm remuxed w/o a duration and using clusters with unknown sizes.
+                         ffmpeg -i bear-320x240.webm -acodec copy -vcodec copy -f webm pipe:1 > bear-320x240-live.webm
+vp8-I-frame-160x240 - The first I frame of a 160x240 reencode of bear-320x240.webm.
+vp8-I-frame-320x120 - The first I frame of a 320x120 reencode of bear-320x240.webm.
+vp8-I-frame-320x240 - The first I frame of bear-320x240.webm.
+vp8-I-frame-320x480 - The first I frame of a 320x480 reencode of bear-320x240.webm.
+vp8-I-frame-640x240 - The first I frame of a 640x240 reencode of bear-320x240.webm.
+vp8-corrupt-I-frame - A copy of vp8-I-frame-320x240 w/ all bytes XORed w/ 0xA5.
+
+// Transport streams.
+bear-640x360.ts - AVC + AAC encode, multiplexed into an MPEG2-TS container.
+bear-640x360_ptswraparound.ts - Same as bear-640x360.ts, with a timestamp wrap-around in the middle, created with the below command:
+                                ffmpeg -itsoffset 95442 -i bear-640x360.ts -c:v copy -c:a copy -muxdelay 0 bear-640x360_ptswraparound.ts
+bear-640x360-hevc.ts - HEVC + AAC encode, multiplexed into an MPEG2-TS container.
+
+// ISO-BMFF streams.
+bear-1280x720.mp4 - AVC + AAC encode, mulitplexed into an ISOBMFF container.
+bear-640x360.mp4  - Same as above, but in a different resolution.
+bear-640x360-ec3.mp4  - Same content, but audio encoded with E-AC3.
+bear-640x360-hevc.mp4  - Same content, but video encoded with HEVC.
+bear-320x180.mp4  - Same as above, but in a different resolution.
+bear-640x360-trailing-moov.mp4  - Same content, but with moov box in the end.
+bear-640x360-trailing-moov-additional-mdat.mp4  - Same content, but with moov box in the end and an additional unused mdat, which should be ignored.
+bear-640x360-av_frag.mp4  - Same content, but in fragmented mp4.
+bear-640x360-aac_lc-silent_right.mp4  - Audio only, stereo, but right channel is silent, with AAC-LC profile.
+bear-640x360-aac_he-silent_right.mp4  - Same as above, but with AAC-HE profile.
+bear-flac.mp4 - Unfragmented audio-only 44.1kHz FLAC in MP4 file, created using:
+  ffmpeg -i bear-1280x720.mp4 -map 0:0 -acodec flac -strict -2 bear-flac.mp4
+  Note, "-strict -2" was required because current ffmpeg libavformat version
+  57.75.100 indicates that flac in MP4 support is experimental.
+bear-640x360-no_edit_list.mp4  - Same content, but with EditLists removed.
+
+// Non square pixels.
+bear-640x360-non_square_pixel-with_pasp.mp4 - A non-square pixel version of the video track of bear-640x360.mp4 with PixelAspectRatio box.
+bear-640x360-non_square_pixel-without_pasp.mp4 - A non-square pixel version of the video track of bear-640x360.mp4 without PixelAspectRatio box.
+
+// Encrypted Files.
+bear-640x360-v_frag-cenc-aux.mp4 - A fragmented MP4 version of the video track of bear-640x360.mp4
+                                   encrypted (ISO CENC) using key ID [1] and key [2] and with sample
+                                   encryption auxiliary information in the beginning of mdat box.
+bear-640x360-v_frag-cenc-senc.mp4 - Same as above, but with sample encryption information stored in
+                                    senc box.
+
+[1] 30313233343536373839303132333435
+[2] ebdd62f16814d27b68ef122afce4ae3c
+
+// Container Tests (additional containers derived from bear.ogv)
+bear.ac3    -- created using "avconv -i bear.ogv -f ac3 -b 192k bear.ac3".
+bear.adts   -- created using "avconv -i bear.ogv -f adts -strict experimental bear.adts".
+bear.aiff   -- created using "avconv -i bear.ogv -f aiff bear.aiff".
+bear.asf    -- created using "avconv -i bear.ogv -f asf bear.asf".
+bear.avi    -- created using "avconv -i bear.ogv -f avi -b 192k bear.avi".
+bear.eac3   -- created using "avconv -i bear.ogv -f eac3 bear.eac3".
+bear.flac   -- created using "avconv -i bear.ogv -f flac bear.flac".
+bear.flv    -- created using "avconv -i bear.ogv -f flv bear.flv".
+bear.h261   -- created using "avconv -i bear.ogv -f h261 -s:0 cif bear.h261".
+bear.h263   -- created using "avconv -i bear.ogv -f h263 -s:0 cif bear.h263".
+bear.m2ts   -- created using "avconv -i bear.ogv -f mpegts bear.m2ts".
+bear.mjpeg  -- created using "avconv -i bear.ogv -f mjpeg bear.mjpeg".
+bear.mpeg   -- created using "avconv -i bear.ogv -f mpeg bear.mpeg".
+bear.rm     -- created using "avconv -i bear.ogv -f rm -b 192k bear.rm".
+bear.swf    -- created using "avconv -i bear.ogv -f swf -an bear.swf".
+
+// VDA test files: test-25fps
+test-25fps.h264:
+  Using ffmpeg SVN-r0.5.9-4:0.5.9-0ubuntu0.10.04.1 @ WebKit r122718, generated
+  with:
+  ffmpeg -i third_party/WebKit/LayoutTests/media/content/test-25fps.mp4 \
+      -vcodec copy -vbsf h264_mp4toannexb -an test-25fps.h264
+
+// VDA test files: bear
+bear.h264:
+  Using ffmpeg version 0.8.6-4:0.8.6-0ubuntu0.12.04.1, generated with
+  bear.mp4 (https://chromiumcodereview.appspot.com/10805089):
+  ffmpeg -i bear.mp4 -vcodec copy -vbsf h264_mp4toannexb \
+      -an bear.h264
+
+bear_no_i_frame_start.h264
+   Derived from bear.h264. Consists of 29-non-I-frames, followed by a single I-frame, and 29 non-I-frames.
+
+avc-byte-stream-frame.h264 - Single IDR frame extracted from test-25fps.h264 in Annex B byte stream format.
+avc-unit-stream-frame.h264 - Single IDR frame from avc-byte-stream-frame.h264 converted to unit stream format.
+
+hevc-byte-stream-frame.h265 - Several video frames with SPS/PPS/VPS manually extracted from an H.265 stream, in Annex B byte stream format.
+hevc-byte-stream-frame.h265 - hevc-byte-stream-frame.h265 converted to unit stream format.
+
+sintel-1024x436.mp4 - First 6 seconds of Sintel stream.

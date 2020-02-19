@@ -1,0 +1,41 @@
+# People who have agreed to one of the CLAs and can contribute patches.
+# The AUTHORS file lists the copyright holders; this file
+# lists people.  For example, Google employees are listed here
+# but not in AUTHORS, because Google holds the copyright.
+#
+# Names should be added to this file only after verifying that
+# the individual or the individual's organization has agreed to
+# the appropriate Contributor License Agreement, found here:
+#
+# https://developers.google.com/open-source/cla/individual
+# https://developers.google.com/open-source/cla/corporate
+#
+# The agreement for individuals can be filled out on the web.
+#
+# When adding J Random Contributor's name to this file,
+# either J's name or J's organization's name should be
+# added to the AUTHORS file, depending on whether the
+# individual or corporate CLA was used.
+#
+# Names should be added to this file as:
+#     Name <email address>
+#
+# Please keep the list sorted.
+
+Anders Hasselqvist <anders.hasselqvist@gmail.com>
+Bei Li <beil@google.com>
+Chun-da Chen <capitalm.c@gmail.com>
+Daniel Cantarín <canta@canta.com.ar>
+David Cavar <pal3thorn@gmail.com>
+Gabe Kopley <gabe@philo.com>
+Haoming Chen <hmchen@google.com>
+Jacob Trimble <modmaker@google.com>
+Joey Parrish <joeyparrish@google.com>
+Kongqun Yang <kqyang@google.com>
+Leandro Moreira <leandro.ribeiro.moreira@gmail.com>
+Leo Law <leoltlaw.gh@gmail.com>
+Piotr Srebrny <srebrny.piotr@gmail.com>
+Richard Eklycke <richard@eklycke.se>
+Rintaro Kuroiwa <rkuroiwa@google.com>
+Sergio Ammirata <sergio@ammirata.net>
+Thomas Inskip <tinskip@google.com>
