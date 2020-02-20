@@ -125,7 +125,25 @@ void HlsNotifyMuxerListener::OnMediaStart(const MuxerOptions& muxer_options,
   }
 }
 
-void HlsNotifyMuxerListener::OnSampleDurationReady(uint32_t sample_duration) {}
+void HlsNotifyMuxerListener::OnSampleDurationReady(uint32_t sample_duration) {
+  if (stream_id_) {
+    // This happens in live mode.
+    hls_notifier_->NotifySampleDuration(stream_id_.value(), sample_duration);
+    return;
+  }
+
+  if (!media_info_) {
+    LOG(WARNING) << "Got sample duration " << sample_duration
+                 << " but no media was specified.";
+    return;
+  }
+  if (!media_info_->has_video_info()) {
+    // If non video, don't worry about it (at the moment).
+    return;
+  }
+
+  media_info_->mutable_video_info()->set_frame_duration(sample_duration);
+}
 
 void HlsNotifyMuxerListener::OnMediaEnd(const MediaRanges& media_ranges,
                                         float duration_seconds) {
@@ -244,9 +262,7 @@ void HlsNotifyMuxerListener::OnKeyFrame(int64_t timestamp,
 }
 
 void HlsNotifyMuxerListener::OnCueEvent(int64_t timestamp,
-                                        const CueEvent& cue_event) {
-
-  VLOG(1) << __FUNCTION__;
+                                        const std::string& cue_data) {
   // Not using |cue_data| at this moment.
   if (!media_info_->has_segment_template()) {
     EventInfo event_info;
@@ -254,7 +270,7 @@ void HlsNotifyMuxerListener::OnCueEvent(int64_t timestamp,
     event_info.cue_event_info = {timestamp};
     event_info_.push_back(event_info);
   } else {
-    hls_notifier_->NotifyCueEvent(stream_id_.value(), timestamp, &cue_event);
+    hls_notifier_->NotifyCueEvent(stream_id_.value(), timestamp);
   }
 }
 
