@@ -17,7 +17,6 @@
 #include "packager/base/optional.h"
 #include "packager/media/base/fourccs.h"
 #include "packager/media/base/range.h"
-#include "packager/media/base/media_handler.h"
 
 namespace shaka {
 namespace media {
@@ -142,8 +141,7 @@ class MuxerListener {
   /// Called when there is a new Ad Cue, which should align with (sub)segments.
   /// @param timestamp indicate the cue timestamp.
   /// @param cue_data is the data of the cue.
-  //virtual void OnCueEvent(int64_t timestamp, const std::string& cue_data) = 0;
-  virtual void OnCueEvent(int64_t timestamp, const CueEvent& event) = 0;
+  virtual void OnCueEvent(int64_t timestamp, const std::string& cue_data) = 0;
 
  protected:
   MuxerListener() = default;
