@@ -32,9 +32,9 @@ void Tag::AddNumber(const std::string& key, uint64_t value) {
   base::StringAppendF(buffer_, "%s=%" PRIu64, key.c_str(), value);
 }
 
-void Tag::AddNumber(const std::string& key, uint32_t value) {
+void Tag::AddFloat(const std::string& key, float value) {
   NextField();
-  base::StringAppendF(buffer_, "%s=%" PRIu32, key.c_str(), value);
+  base::StringAppendF(buffer_, "%s=%.3f", key.c_str(), value);
 }
 
 void Tag::AddNumberPair(const std::string& key,
@@ -59,25 +59,6 @@ void Tag::NextField() {
   if (fields++) {
     buffer_->append(",");
   }
-}
-
-void Tag::AddValue(uint64_t value) {
-  NextField();
-  base::StringAppendF(buffer_, "%" PRIu64, value);
-}
-
-void Tag::AddValue(double value) {
-  NextField();
-  base::StringAppendF(buffer_, "%.3f", value);
-}
-
-void Tag::AddOfValue(double value) {
-  //NextField();
-  base::StringAppendF(buffer_, "/%.3f", value);
-}
-
-void Tag::AddStringOnly(const std::string &s) {
-  base::StringAppendF(buffer_, "%s", s.c_str());
 }
 
 }  // namespace hls

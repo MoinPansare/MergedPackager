@@ -12,17 +12,9 @@
 
 #include "packager/hls/public/hls_params.h"
 #include "packager/mpd/base/media_info.pb.h"
-#include "packager/media/base/media_handler.h"
-
 
 namespace shaka {
-
-namespace media {
-
-  struct CueEvent;
-}  
 namespace hls {
-
 
 // TODO(rkuroiwa): Consider merging this with MpdNotifier.
 class HlsNotifier {
@@ -48,6 +40,15 @@ class HlsNotifier {
                                const std::string& stream_name,
                                const std::string& group_id,
                                uint32_t* stream_id) = 0;
+
+  /// Change the sample duration of stream with @a stream_id.
+  /// @param stream_id is the value set by NotifyNewStream().
+  /// @param sample_duration is the duration of a sample in timescale of the
+  ///        media.
+  /// @return true on success, false otherwise. This may fail if the stream
+  ///         specified by @a stream_id does not exist.
+  virtual bool NotifySampleDuration(uint32_t stream_id,
+                                    uint32_t sample_duration) = 0;
 
   /// @param stream_id is the value set by NotifyNewStream().
   /// @param segment_name is the name of the new segment.
@@ -78,8 +79,7 @@ class HlsNotifier {
   /// @param stream_id is the value set by NotifyNewStream().
   /// @param timestamp is the timestamp of the CueEvent.
   /// @return true on success, false otherwise.
-  //virtual bool NotifyCueEvent(uint32_t stream_id, uint64_t timestamp) = 0;
-  virtual bool NotifyCueEvent(uint32_t stream_id, uint64_t timestamp, const shaka::media::CueEvent* cue_event=nullptr) = 0;
+  virtual bool NotifyCueEvent(uint32_t stream_id, uint64_t timestamp) = 0;
 
   /// @param stream_id is the value set by NotifyNewStream().
   /// @param key_id is the key ID for the stream.

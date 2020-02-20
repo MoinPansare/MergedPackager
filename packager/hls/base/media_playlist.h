@@ -23,16 +23,6 @@ class File;
 
 namespace hls {
 
-const uint64_t kDefaultValueLong = ULONG_MAX;
-const uint32_t kDefaultValueInt = UINT_MAX;
-const uint8_t kDefaultValueChar = UCHAR_MAX; 
-
-
-const uint32_t kFlagWebDeliveryAllowed = 1;
-const uint32_t kFlagNoRegionalBlackout = 2;
-const uint32_t kFlagArchiveAllowed = 4;
-const uint32_t kFlagDeviceRestrictions = 8;
-
 class HlsEntry {
  public:
   enum class EntryType {
@@ -40,15 +30,7 @@ class HlsEntry {
     kExtKey,
     kExtDiscontinuity,
     kExtPlacementOpportunity,
-    kExtSignalExit,
-    kExtSignalSpan,
-    kExtSignalReturn,
   };
-  enum class SpliceType {
-    kLiveDAI,        
-    kALTCON,         
-  };
-
   virtual ~HlsEntry();
 
   EntryType type() const { return type_; }
@@ -79,7 +61,8 @@ class MediaPlaylist {
   };
 
   /// @param hls_params contains HLS parameters.
-  /// @param file_name is the file name of this media playlist.
+  /// @param file_name is the file name of this media playlist, relative to
+  ///        master playlist output path.
   /// @param name is the name of this playlist. In other words this is the
   ///        value of the NAME attribute for EXT-X-MEDIA. This is not
   ///        necessarily the same as @a file_name.
@@ -110,16 +93,17 @@ class MediaPlaylist {
   void SetCharacteristicsForTesting(
       const std::vector<std::string>& characteristics);
 
-  bool InAdBreak(void) {
-
-    return in_ad_state_;
-  }
-
   /// This must succeed before calling any other public methods.
   /// @param media_info is the info of the segments that are going to be added
   ///        to this playlist.
   /// @return true on success, false otherwise.
   virtual bool SetMediaInfo(const MediaInfo& media_info);
+
+  /// Set the sample duration. Sample duration is used to generate frame rate.
+  /// Sample duration is not available right away especially. This allows
+  /// setting the sample duration after the Media Playlist has been initialized.
+  /// @param sample_duration is the duration of a sample.
+  virtual void SetSampleDuration(uint32_t sample_duration);
 
   /// Segments must be added in order.
   /// @param file_name is the file name of the segment.
@@ -166,23 +150,6 @@ class MediaPlaylist {
   /// https://support.google.com/dfp_premium/answer/7295798?hl=en.
   virtual void AddPlacementOpportunity();
 
-  /// Add #EXT-X-SIGNAL_EXIT for Charter DAI program exit at ad break start
-  /// 
-  virtual void AddSignalExit(HlsEntry::SpliceType type, 
-                             double duration, 
-                             uint32_t eventid,
-                             std::string upid,
-                             uint8_t seg_type_id,
-                             uint32_t flags);
-
-  /// Add #EXT-X-SIGNAL_SPAN for Charter DAI ad break segements during break
-  /// 
-  virtual void AddSignalSpan(HlsEntry::SpliceType type, double position, double duration);
-
-  /// Add #EXT-X-SIGNAL_RETURN for Charter DAI ad break return to program
-  /// 
-  virtual void AddSignalReturn(HlsEntry::SpliceType type, double duration);
-
   /// Write the playlist to |file_path|.
   /// This does not close the file.
   /// If target duration is not set expliticly, this will try to find the target
@@ -225,6 +192,12 @@ class MediaPlaylist {
   ///         resolution values.
   virtual bool GetDisplayResolution(uint32_t* width, uint32_t* height) const;
 
+  /// @return The video range of the stream.
+  virtual std::string GetVideoRange() const;
+
+  /// @return the frame rate.
+  virtual double GetFrameRate() const;
+
   /// @return the language of the media, as an ISO language tag in its shortest
   ///         form.  May be an empty string for video.
   const std::string& language() const { return language_; }
@@ -263,11 +236,11 @@ class MediaPlaylist {
   std::string codec_;
   std::string language_;
   std::vector<std::string> characteristics_;
-  int media_sequence_number_ = 0;
+  uint32_t media_sequence_number_ = 0;
   bool inserted_discontinuity_tag_ = false;
   int discontinuity_sequence_number_ = 0;
 
-  double longest_segment_duration_ = 0.0;
+  double longest_segment_duration_seconds_ = 0.0;
   uint32_t time_scale_ = 0;
 
   BandwidthEstimator bandwidth_estimator_;
@@ -280,7 +253,10 @@ class MediaPlaylist {
   bool target_duration_set_ = false;
   uint32_t target_duration_ = 0;
 
+  // TODO(kqyang): This could be managed better by a separate class, than having
+  // all them managed in MediaPlaylist.
   std::list<std::unique_ptr<HlsEntry>> entries_;
+  double current_buffer_depth_ = 0;
   // A list to hold the file names of the segments to be removed temporarily.
   // Once a file is actually removed, it is removed from the list.
   std::list<std::string> segments_to_be_removed_;
@@ -293,13 +269,6 @@ class MediaPlaylist {
     std::string segment_file_name;
   };
   std::list<KeyFrameInfo> key_frames_;
-
-  // ad insetion data
-  bool in_ad_state_ = false;
-  double ad_duration_ = 0.0;
-  double  ad_position_ = 0.0;
-  uint32_t ad_segments_ = 0;
-
 
   DISALLOW_COPY_AND_ASSIGN(MediaPlaylist);
 };

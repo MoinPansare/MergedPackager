@@ -52,14 +52,13 @@ struct HlsParams {
   /// i.e. subtitles or close-captions.
   std::string default_text_language;
   /// This is the target segment duration requested by the user. The actual
-  /// segment duration may be different to the target segment duration.
-  /// This parameter is included here to for bandwidth estimator to exclude the
-  /// segments with duration less than half of the target duration from
-  /// bandwidth estimation. See
-  /// https://github.com/google/shaka-packager/issues/498 for details. It will
+  /// segment duration may be different to the target segment duration. It will
   /// be populated from segment duration specified in ChunkingParams if not
   /// specified.
   double target_segment_duration = 0;
+  /// Custom EXT-X-MEDIA-SEQUENCE value to allow continuous media playback
+  /// across packager restarts. See #691 for details.
+  uint32_t media_sequence_number = 0;
 };
 
 }  // namespace shaka
