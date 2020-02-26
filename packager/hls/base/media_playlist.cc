@@ -528,7 +528,7 @@ class SignalReturnEntry : public HlsEntry {
     double duration=hls::kDefaultValueLong
   ): HlsEntry(HlsEntry::EntryType::kExtSignalReturn),
   spliceType_(type),
-  duration_(duration);
+  duration_(duration){};
 
   std::string ToString() override;
 
@@ -836,17 +836,18 @@ std::string MediaPlaylist::GetVideoRange() const {
 
   // HLS specification:
   // https://tools.ietf.org/html/draft-pantos-hls-rfc8216bis-02#section-4.4.4.2
-  switch (media_info_.video_info().transfer_characteristics()) {
-    case 1:
-      return "SDR";
-    case 16:
-    case 18:
-      return "PQ";
-    default:
-      // Leave it empty if we do not have the transfer characteristics
-      // information.
-      return "";
-  }
+  // switch (media_info_.video_info().transfer_characteristics()) {
+  //   case 1:
+  //     return "SDR";
+  //   case 16:
+  //   case 18:
+  //     return "PQ";
+  //   default:
+  //     // Leave it empty if we do not have the transfer characteristics
+  //     // information.
+  //     return "";
+  // }
+  return "";
 }
 
 double MediaPlaylist::GetFrameRate() const {
