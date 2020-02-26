@@ -365,6 +365,42 @@ class SignalExitEntry : public HlsEntry {
 // #EXT-X-SIGNAL-EXIT[:Duration], SpliceType=spliceType, [SignalId=signalId,] [Paid=providerID/assetID,]
 // [MaxD=maxd, MinD=mind, Maxads=maxads, MinAds=minads],key1=value1,…keyN=valueN,Acds=(FW, BA)
 
+
+SignalExitEntry::SignalExitEntry(
+    SpliceType type,
+    double duration,
+    uint32_t eventid,
+    std::string upid,
+    uint8_t segment_type_id,
+    uint32_t flags,
+
+    std::string signalId,
+    std::string paid,
+    uint64_t maxd,
+    uint64_t mind,
+    uint64_t maxads,
+    uint64_t minads,
+    std::string key_values
+  )
+    : HlsEntry(HlsEntry::EntryType::kExtSignalExit),
+    spliceType_(type),
+    duration_(duration),
+    eventid_(eventid),
+    upid_(upid),
+    segment_type_id_(segment_type_id),
+    flags_(flags),
+
+    signalId_(signalId),
+    paid_(paid),
+    maxd_(maxd),
+    mind_(mind),
+    maxads_(maxads),
+    minads_(minads),
+
+    // TODO(ecl): key_values will need to be replaced by a container type
+    key_values_(key_values)
+    {}
+
 SignalExitEntry::SignalExitEntry(
     SpliceType type=SpliceType::kLiveDAI,
     double duration=hls::kDefaultValueLong,
@@ -490,6 +526,33 @@ class SignalSpanEntry : public HlsEntry {
 // key1=value1,…keyN=valueN,Acds=(FW, BA)
 
 SignalSpanEntry::SignalSpanEntry(
+    SpliceType type,
+    double position,
+    double duration,
+    std::string signalId,
+    std::string paid,
+    uint64_t maxd,
+    uint64_t mind,
+    uint64_t maxads,
+    uint64_t minads,
+    std::string key_values
+
+  )
+    : HlsEntry(HlsEntry::EntryType::kExtSignalSpan),
+    spliceType_(type),
+    position_(position),
+    duration_(duration),
+    signalId_(signalId),
+    paid_(paid),
+    maxd_(maxd),
+    mind_(mind),
+    maxads_(maxads),
+    minads_(minads),
+    key_values_(key_values)
+
+    {}
+
+SignalSpanEntry::SignalSpanEntry(
     SpliceType type=SpliceType::kLiveDAI,
     double position=0,
     double duration=hls::kDefaultValueLong,
@@ -574,6 +637,15 @@ class SignalReturnEntry : public HlsEntry {
 };
 
 // #EXT-X-SIGNAL-RETURN[:Duration], SpliceType=spliceType
+
+SignalReturnEntry::SignalReturnEntry(
+    SpliceType type,
+    double duration
+  )
+    : HlsEntry(HlsEntry::EntryType::kExtSignalReturn),
+    spliceType_(type),
+    duration_(duration)
+    {}
 
 SignalReturnEntry::SignalReturnEntry(
     SpliceType type=SpliceType::kLiveDAI,
