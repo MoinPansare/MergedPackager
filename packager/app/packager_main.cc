@@ -39,7 +39,6 @@
 
 DEFINE_bool(dump_stream_info, false, "Dump demuxed stream info.");
 DEFINE_bool(licenses, false, "Dump licenses.");
-DEFINE_bool(quiet, false, "When enabled, LOG(INFO) output is suppressed.");
 DEFINE_bool(use_fake_clock_for_muxer,
             false,
             "Set to true to use a fake clock for muxer. With this flag set, "
@@ -105,14 +104,7 @@ const char kUsage[] =
     "    unspecified, no I-Frames only playlist is created.\n"
     "  - hls_characteristics (charcs): Optional colon/semicolon separated\n"
     "    list of values for the CHARACTERISTICS attribute for EXT-X-MEDIA.\n"
-    "    See CHARACTERISTICS attribute in http://bit.ly/2OOUkdB for details.\n"
-    "  - dash_accessibilities (accessibilities): Optional semicolon separated\n"
-    "    list of values for DASH Accessibility elements. The value should be\n"
-    "    in the format: scheme_id_uri=value.\n"
-    "  - dash_roles (roles): Optional semicolon separated list of values for\n"
-    "    DASH Role elements. The value should be one of: caption, subtitle,\n"
-    "    main, alternate, supplementary, commentary and dub. See DASH\n"
-    "    (ISO/IEC 23009-1) specification for details.\n";
+    "    See CHARACTERISTICS attribute in http://bit.ly/2OOUkdB for details.\n";
 
 // Labels for parameters in RawKey key info.
 const char kDrmLabelLabel[] = "label";
@@ -452,7 +444,7 @@ base::Optional<PackagingParams> GetPackagingParams() {
 
   mpd_params.default_language = FLAGS_default_language;
   mpd_params.default_text_language = FLAGS_default_text_language;
-  mpd_params.generate_static_live_mpd = FLAGS_generate_static_live_mpd;
+  mpd_params.generate_static_live_mpd = FLAGS_generate_static_mpd;
   mpd_params.generate_dash_if_iop_compliant_mpd =
       FLAGS_generate_dash_if_iop_compliant_mpd;
   mpd_params.allow_approximate_segment_timeline =
@@ -470,7 +462,6 @@ base::Optional<PackagingParams> GetPackagingParams() {
       FLAGS_preserved_segments_outside_live_window;
   hls_params.default_language = FLAGS_default_language;
   hls_params.default_text_language = FLAGS_default_text_language;
-  hls_params.media_sequence_number = FLAGS_hls_media_sequence_number;
 
   TestParams& test_params = packaging_params.test_params;
   test_params.dump_stream_info = FLAGS_dump_stream_info;
@@ -502,8 +493,6 @@ int PackagerMain(int argc, char** argv) {
     google::ShowUsageWithFlags("Usage");
     return kSuccess;
   }
-  if (FLAGS_quiet)
-    logging::SetMinLogLevel(logging::LOG_WARNING);
 
   if (!ValidateWidevineCryptoFlags() || !ValidateRawKeyCryptoFlags() ||
       !ValidatePRCryptoFlags()) {
@@ -534,8 +523,7 @@ int PackagerMain(int argc, char** argv) {
     LOG(ERROR) << "Packaging Error: " << status.ToString();
     return kPackagingFailed;
   }
-  if (!FLAGS_quiet)
-    printf("Packaging completed successfully.\n");
+  printf("Packaging completed successfully.\n");
   return kSuccess;
 }
 

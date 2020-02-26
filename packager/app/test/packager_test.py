@@ -9,7 +9,6 @@
 
 import filecmp
 import glob
-import logging
 import os
 import re
 import shutil
@@ -173,7 +172,7 @@ def _UpdateMediaInfoPaths(media_info_filepath):
   #   after:  media_file_name: "bear-640x360-audio.mp4"
 
   with open(media_info_filepath, 'rb') as f:
-    content = f.read().decode()
+    content = f.read()
 
   regex = 'media_file_name: "(.*)"'
   for path in re.findall(regex, content):
@@ -181,7 +180,7 @@ def _UpdateMediaInfoPaths(media_info_filepath):
     content = content.replace(path, short_path)
 
   with open(media_info_filepath, 'wb') as f:
-    f.write(content.encode())
+    f.write(content)
 
 
 def _UpdateMpdTimes(mpd_filepath):
@@ -193,14 +192,14 @@ def _UpdateMpdTimes(mpd_filepath):
     if m:
       old = m.group(0)
       out = str_in.replace(old, new)
-      logging.info('Replacing "%s" with "%s"', old, new)
+      print 'Replacing "%s" with "%s"' % (old, new)
     else:
       out = str_in
 
     return out
 
   with open(mpd_filepath, 'rb') as f:
-    content = f.read().decode()
+    content = f.read()
 
   content = _Replace(
       content,
@@ -213,7 +212,7 @@ def _UpdateMpdTimes(mpd_filepath):
       'publishTime="some_time"')
 
   with open(mpd_filepath, 'wb') as f:
-    f.write(content.encode())
+    f.write(content)
 
 
 def GetExtension(input_file_path, output_format):
@@ -234,7 +233,6 @@ def GetSegmentedExtension(base_extension):
 class PackagerAppTest(unittest.TestCase):
 
   def setUp(self):
-    super(PackagerAppTest, self).setUp()
     self.packager = packager_app.PackagerApp()
     self.tmp_dir = tempfile.mkdtemp()
     self.test_data_dir = os.path.join(test_env.SRC_DIR, 'packager', 'media',
@@ -264,7 +262,6 @@ class PackagerAppTest(unittest.TestCase):
   def tearDown(self):
     if test_env.options.remove_temp_files_after_test:
       shutil.rmtree(self.tmp_dir)
-    super(PackagerAppTest, self).tearDown()
 
   def _GetStream(self,
                  descriptor,
@@ -275,8 +272,6 @@ class PackagerAppTest(unittest.TestCase):
                  using_time_specifier=False,
                  hls=False,
                  hls_characteristics=None,
-                 dash_accessibilities=None,
-                 dash_roles=None,
                  trick_play_factor=None,
                  drm_label=None,
                  skip_encryption=None,
@@ -303,8 +298,6 @@ class PackagerAppTest(unittest.TestCase):
           $Number$. This flag is only relevant if segmented is True.
       hls: Should the output be for an HLS manifest.
       hls_characteristics: CHARACTERISTICS attribute for the HLS stream.
-      dash_accessibilities: Accessibility element for the DASH stream.
-      dash_roles: Role element for the DASH stream.
       trick_play_factor: Signals the stream is to be used for a trick play
           stream and which key frames to use. A trick play factor of 0 is the
           same as not specifying a trick play factor.
@@ -359,11 +352,6 @@ class PackagerAppTest(unittest.TestCase):
 
     if hls_characteristics:
       stream.Append('hls_characteristics', hls_characteristics)
-
-    if dash_accessibilities:
-      stream.Append('dash_accessibilities', dash_accessibilities)
-    if dash_roles:
-      stream.Append('dash_roles', dash_roles)
 
     requires_init_segment = segmented and base_ext not in [
         'aac', 'ac3', 'ec3', 'ts', 'vtt'
@@ -431,7 +419,7 @@ class PackagerAppTest(unittest.TestCase):
                 time_shift_buffer_depth=0.0,
                 preserved_segments_outside_live_window=0,
                 utc_timings=None,
-                generate_static_live_mpd=False,
+                generate_static_mpd=False,
                 ad_cues=None,
                 default_language=None,
                 segment_duration=1.0,
@@ -508,8 +496,8 @@ class PackagerAppTest(unittest.TestCase):
     if utc_timings:
       flags += ['--utc_timings', utc_timings]
 
-    if generate_static_live_mpd:
-      flags += ['--generate_static_live_mpd']
+    if generate_static_mpd:
+      flags += ['--generate_static_mpd']
 
     if ad_cues:
       flags += ['--ad_cues', ad_cues]
@@ -647,18 +635,6 @@ class PackagerFunctionalTest(PackagerAppTest):
         self._GetStreams(['audio', 'video']), self._GetFlags(output_dash=True))
     self._CheckTestResults('audio-video')
 
-  def testAudioVideoWithAccessibilitiesAndRoles(self):
-    streams = [
-        self._GetStream(
-            'audio',
-            dash_accessibilities='urn:tva:metadata:cs:AudioPurposeCS:2007=1',
-            dash_roles='alternate'),
-        self._GetStream('video'),
-    ]
-
-    self.assertPackageSuccess(streams, self._GetFlags(output_dash=True))
-    self._CheckTestResults('audio-video-with-accessibilities-and-roles')
-
   def testAudioVideoWithTrickPlay(self):
     streams = [
         self._GetStream('audio'),
@@ -726,21 +702,6 @@ class PackagerFunctionalTest(PackagerAppTest):
         self._GetStreams(['audio', 'video'], language='por-BR', hls=True),
         self._GetFlags(output_dash=True, output_hls=True))
     self._CheckTestResults('audio-video-with-language-override-with-subtag')
-
-  def testMp4TrailingMoov(self):
-    self.assertPackageSuccess(
-        self._GetStreams(['audio', 'video'],
-                         test_files=['bear-640x360-trailing-moov.mp4']),
-        self._GetFlags(output_dash=True, output_hls=True))
-    self._CheckTestResults('mp4-trailing-moov')
-
-  def testVideoNonSquarePixel(self):
-    self.assertPackageSuccess(
-        self._GetStreams(
-            ['video'],
-            test_files=['bear-640x360-non_square_pixel-with_pasp.mp4']),
-        self._GetFlags(output_dash=True, output_hls=True))
-    self._CheckTestResults('video-non-square-pixel')
 
   def testAacHe(self):
     self.assertPackageSuccess(
@@ -1049,17 +1010,6 @@ class PackagerFunctionalTest(PackagerAppTest):
                        ad_cues='1.5'))
     self._CheckTestResults('encryption-and-ad-cues')
 
-  def testEncryptionAndAdCuesAndDashTrickPlay(self):
-    streams = [
-        self._GetStream('audio'),
-        self._GetStream('video'),
-        self._GetStream('video', trick_play_factor=1),
-    ]
-    self.assertPackageSuccess(
-        streams, self._GetFlags(
-            encryption=True, output_dash=True, ad_cues='1.5'))
-    self._CheckTestResults('encryption-and-ad-cues-and-dash-trick-play')
-
   def testEncryptionAndAdCuesSplitContent(self):
     self.assertPackageSuccess(
         self._GetStreams(
@@ -1091,7 +1041,7 @@ class PackagerFunctionalTest(PackagerAppTest):
             output_format='mp4')
     ]
     flags = self._GetFlags(output_dash=True, output_hls=True,
-                           generate_static_live_mpd=True, ad_cues='1.5')
+                           generate_static_mpd=True, ad_cues='1.5')
     self.assertPackageSuccess(streams, flags)
     # Mpd cannot be validated right now since we don't generate determinstic
     # mpd with multiple inputs due to thread racing.
@@ -1217,33 +1167,6 @@ class PackagerFunctionalTest(PackagerAppTest):
 
     self.assertPackageSuccess(streams, flags)
     self._CheckTestResults('hevc-with-encryption', verify_decryption=True)
-
-  def testHdr10WithEncryption(self):
-    streams = [
-        self._GetStream('video', test_file='bear-640x360-hevc-hdr10.mp4')
-    ]
-    flags = self._GetFlags(encryption=True, output_dash=True, output_hls=True)
-
-    self.assertPackageSuccess(streams, flags)
-    self._CheckTestResults('hdr10-with-encryption')
-
-  def testDolbyVisionProfile5WithEncryption(self):
-    streams = [
-        self._GetStream('video', test_file='sparks_dovi_5.mp4')
-    ]
-    flags = self._GetFlags(encryption=True, output_dash=True, output_hls=True)
-
-    self.assertPackageSuccess(streams, flags)
-    self._CheckTestResults('dolby-vision-profile-5-with-encryption')
-
-  def testDolbyVisionProfile8WithEncryption(self):
-    streams = [
-        self._GetStream('video', test_file='sparks_dovi_8.mp4')
-    ]
-    flags = self._GetFlags(encryption=True, output_dash=True, output_hls=True)
-
-    self.assertPackageSuccess(streams, flags)
-    self._CheckTestResults('dolby-vision-profile-8-with-encryption')
 
   def testVp8Mp4WithEncryption(self):
     streams = [
@@ -1451,7 +1374,7 @@ class PackagerFunctionalTest(PackagerAppTest):
   def testLiveStaticProfile(self):
     self.assertPackageSuccess(
         self._GetStreams(['audio', 'video'], segmented=True),
-        self._GetFlags(output_dash=True, generate_static_live_mpd=True))
+        self._GetFlags(output_dash=True, generate_static_mpd=True))
     self._CheckTestResults('live-static-profile')
 
   def testLiveStaticProfileWithTimeInSegmentName(self):
@@ -1459,7 +1382,7 @@ class PackagerFunctionalTest(PackagerAppTest):
         self._GetStreams(['audio', 'video'],
                          segmented=True,
                          using_time_specifier=True),
-        self._GetFlags(output_dash=True, generate_static_live_mpd=True))
+        self._GetFlags(output_dash=True, generate_static_mpd=True))
     self._CheckTestResults('live-static-profile-with-time-in-segment-name')
 
   def testLiveProfileAndEncryption(self):
@@ -1554,7 +1477,7 @@ class PackagerFunctionalTest(PackagerAppTest):
                          test_files=['bear-1280x720.mp4', 'bear-640x360.mp4',
                                      'bear-320x180.mp4']), flags)
     with open(self.mpd_output, 'rb') as f:
-      logging.info(f.read())
+      print f.read()
       # TODO(kqyang): Add some validations.
 
   @unittest.skipUnless(test_env.has_aes_flags, 'Requires AES credentials.')
