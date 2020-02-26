@@ -382,24 +382,6 @@ SignalExitEntry::SignalExitEntry(
     uint64_t minads,
     std::string key_values
   )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalExit),
-    spliceType_(type),
-    duration_(duration),
-    eventid_(eventid),
-    upid_(upid),
-    segment_type_id_(segment_type_id),
-    flags_(flags),
-
-    signalId_(signalId),
-    paid_(paid),
-    maxd_(maxd),
-    mind_(mind),
-    maxads_(maxads),
-    minads_(minads),
-
-    // TODO(ecl): key_values will need to be replaced by a container type
-    key_values_(key_values)
-    {}
 
 SignalExitEntry::SignalExitEntry(
     SpliceType type=SpliceType::kLiveDAI,
@@ -538,19 +520,6 @@ SignalSpanEntry::SignalSpanEntry(
     std::string key_values
 
   )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalSpan),
-    spliceType_(type),
-    position_(position),
-    duration_(duration),
-    signalId_(signalId),
-    paid_(paid),
-    maxd_(maxd),
-    mind_(mind),
-    maxads_(maxads),
-    minads_(minads),
-    key_values_(key_values)
-
-    {}
 
 SignalSpanEntry::SignalSpanEntry(
     SpliceType type=SpliceType::kLiveDAI,
@@ -642,10 +611,6 @@ SignalReturnEntry::SignalReturnEntry(
     SpliceType type,
     double duration
   )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalReturn),
-    spliceType_(type),
-    duration_(duration)
-    {}
 
 SignalReturnEntry::SignalReturnEntry(
     SpliceType type=SpliceType::kLiveDAI,
