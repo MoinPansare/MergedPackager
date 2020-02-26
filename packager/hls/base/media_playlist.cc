@@ -58,7 +58,7 @@ std::string SpliceTypeToString(HlsEntry::SpliceType type) {
   if (type == HlsEntry::SpliceType::kLiveDAI)
     return "LiveDAI";
   else
-  if (type == HlsEntry::SpliceType::kALTCON)    
+  if (type == HlsEntry::SpliceType::kALTCON)
     return "ALTCON";
   else
     return "Unknown";
@@ -320,17 +320,17 @@ class SignalExitEntry : public HlsEntry {
  public:
 
   SignalExitEntry(
-    SpliceType type,    
+    SpliceType type,
     double duration,
     uint32_t eventid,
     std::string upid,
     uint8_t segment_type_id,
     uint32_t flags,
 
-    // these are less used parameters so putting them at end as default/optionals 
-    std::string signalId,        
-    std::string paid,        
-    uint64_t maxd,           
+    // these are less used parameters so putting them at end as default/optionals
+    std::string signalId,
+    std::string paid,
+    uint64_t maxd,
     uint64_t mind,
     uint64_t maxads,
     uint64_t minads,
@@ -351,22 +351,22 @@ class SignalExitEntry : public HlsEntry {
   std::string upid_;
   uint8_t segment_type_id_;
   uint32_t flags_;
-  
+
   std::string signalId_;
   std::string paid_;
   uint64_t maxd_;
   uint64_t mind_;
   uint64_t maxads_;
   uint64_t minads_;
-  std::string key_values_;       
+  std::string key_values_;
 };
 
 
-// #EXT-X-SIGNAL-EXIT[:Duration], SpliceType=spliceType, [SignalId=signalId,] [Paid=providerID/assetID,] 
+// #EXT-X-SIGNAL-EXIT[:Duration], SpliceType=spliceType, [SignalId=signalId,] [Paid=providerID/assetID,]
 // [MaxD=maxd, MinD=mind, Maxads=maxads, MinAds=minads],key1=value1,…keyN=valueN,Acds=(FW, BA)
 
 SignalExitEntry::SignalExitEntry(
-    SpliceType type=SpliceType::kLiveDAI,
+    // SpliceType type=SpliceType::kLiveDAI,
     double duration=hls::kDefaultValueLong,
     uint32_t eventid=hls::kDefaultValueInt,
     std::string upid="",
@@ -381,13 +381,13 @@ SignalExitEntry::SignalExitEntry(
     uint64_t minads=hls::kDefaultValueLong,
     std::string key_values=""
   )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalExit), 
+    : HlsEntry(HlsEntry::EntryType::kExtSignalExit),
     spliceType_(type),
     duration_(duration),
     eventid_(eventid),
     upid_(upid),
     segment_type_id_(segment_type_id),
-    flags_(flags),    
+    flags_(flags),
 
     signalId_(signalId),
     paid_(paid),
@@ -411,16 +411,16 @@ std::string SignalExitEntry::ToString() {
   tag.AddString("SpliceType",SpliceTypeToString(spliceType_));
 
   if (signalId_.length() != 0)
-    tag.AddString("SignalId",signalId_);      
+    tag.AddString("SignalId",signalId_);
 
   if (paid_.length() != 0)
-    tag.AddString("Paid",paid_);      
+    tag.AddString("Paid",paid_);
 
   if (eventid_ != hls::kDefaultValueInt)
     tag.AddNumber("segmentationEventId",eventid_);
 
   if (upid_.length() != 0)
-    tag.AddString("segmentationUpid",upid_);  
+    tag.AddString("segmentationUpid",upid_);
 
   if (segment_type_id_ != hls::kDefaultValueChar)
     tag.AddNumber("segmentationTypeId",(uint32_t)segment_type_id_);
@@ -482,15 +482,15 @@ class SignalSpanEntry : public HlsEntry {
   uint64_t mind_;
   uint64_t maxads_;
   uint64_t minads_;
-  std::string key_values_;       
+  std::string key_values_;
 };
 
-// #EXT-X-SIGNAL-SPAN:SecondsFromSignal[/Duration], SpliceType=spliceType, [SignalId=signalId,] 
-// [Paid=providerId/assetId,] [MaxD=maxd, MinD=mind, MaxAds=maxads, MinAds=minads,] 
+// #EXT-X-SIGNAL-SPAN:SecondsFromSignal[/Duration], SpliceType=spliceType, [SignalId=signalId,]
+// [Paid=providerId/assetId,] [MaxD=maxd, MinD=mind, MaxAds=maxads, MinAds=minads,]
 // key1=value1,…keyN=valueN,Acds=(FW, BA)
 
 SignalSpanEntry::SignalSpanEntry(
-    SpliceType type=SpliceType::kLiveDAI,
+    // SpliceType type=SpliceType::kLiveDAI,
     double position=0,
     double duration=hls::kDefaultValueLong,
     std::string signalId="",
@@ -502,7 +502,7 @@ SignalSpanEntry::SignalSpanEntry(
     std::string key_values=""
 
   )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalSpan), 
+    : HlsEntry(HlsEntry::EntryType::kExtSignalSpan),
     spliceType_(type),
     position_(position),
     duration_(duration),
@@ -523,17 +523,17 @@ std::string SignalSpanEntry::ToString() {
   tag.AddValue(position_);
 
   if (duration_ != hls::kDefaultValueLong) {
-  
+
     tag.AddOfValue(duration_);
   }
 
   tag.AddString("SpliceType",SpliceTypeToString(spliceType_));
 
   if (signalId_.length() != 0)
-    tag.AddString("SignalId",signalId_);      
+    tag.AddString("SignalId",signalId_);
 
   if (paid_.length() != 0)
-    tag.AddString("Paid",paid_);      
+    tag.AddString("Paid",paid_);
 
   if (maxd_ != hls::kDefaultValueLong)
     tag.AddNumber("MaxD",maxd_);
@@ -576,7 +576,7 @@ class SignalReturnEntry : public HlsEntry {
 // #EXT-X-SIGNAL-RETURN[:Duration], SpliceType=spliceType
 
 SignalReturnEntry::SignalReturnEntry(
-    SpliceType type=SpliceType::kLiveDAI,
+    // SpliceType type=SpliceType::kLiveDAI,
     double duration=hls::kDefaultValueLong
   )
     : HlsEntry(HlsEntry::EntryType::kExtSignalReturn),
@@ -766,8 +766,8 @@ void MediaPlaylist::AddPlacementOpportunity() {
 */
 
 void MediaPlaylist::AddSignalExit(
-    HlsEntry::SpliceType type, 
-    double duration, 
+    HlsEntry::SpliceType type,
+    double duration,
     uint32_t eventid,
     std::string upid,
     uint8_t seg_type_id,
@@ -871,6 +871,33 @@ bool MediaPlaylist::GetDisplayResolution(uint32_t* width,
   return false;
 }
 
+std::string MediaPlaylist::GetVideoRange() const {
+  // Dolby Vision (dvh1 or dvhe) is always HDR.
+  if (codec_.find("dvh") == 0)
+    return "PQ";
+
+  // HLS specification:
+  // https://tools.ietf.org/html/draft-pantos-hls-rfc8216bis-02#section-4.4.4.2
+  switch (media_info_.video_info().transfer_characteristics()) {
+    case 1:
+      return "SDR";
+    case 16:
+    case 18:
+      return "PQ";
+    default:
+      // Leave it empty if we do not have the transfer characteristics
+      // information.
+      return "";
+  }
+}
+
+double MediaPlaylist::GetFrameRate() const {
+  if (media_info_.video_info().frame_duration() == 0)
+    return 0;
+  return static_cast<double>(time_scale_) /
+         media_info_.video_info().frame_duration();
+}
+
 void MediaPlaylist::AddSegmentInfoEntry(const std::string& segment_file_name,
                                         int64_t start_time,
                                         int64_t duration,
@@ -888,13 +915,13 @@ void MediaPlaylist::AddSegmentInfoEntry(const std::string& segment_file_name,
   }
 
   // If in the ad insertion state and this is not the first segment, insert the span tag
-  if (in_ad_state_) { 
+  if (in_ad_state_) {
 
       if (ad_segments_ > 0) {
         // use the ad duration from the cue_event signal. The duration parmeter is the segment duration in pts time
         AddSignalSpan(HlsEntry::SpliceType::kLiveDAI, ad_position_,ad_duration_);
       }
-      // track the stream position 
+      // track the stream position
       ad_position_ += (duration/time_scale_);
   }
 
@@ -978,7 +1005,7 @@ void MediaPlaylist::SlideWindow() {
       ++discontinuity_sequence_number_;
     // TODO(ecl): Noop for signal events for now
     } else if (entry_type == HlsEntry::EntryType::kExtSignalExit) {
-    } 
+    }
     else if (entry_type == HlsEntry::EntryType::kExtSignalReturn) {
     }
     else if (entry_type == HlsEntry::EntryType::kExtSignalSpan) {

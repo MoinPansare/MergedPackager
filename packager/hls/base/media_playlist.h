@@ -25,7 +25,7 @@ namespace hls {
 
 const uint64_t kDefaultValueLong = ULONG_MAX;
 const uint32_t kDefaultValueInt = UINT_MAX;
-const uint8_t kDefaultValueChar = UCHAR_MAX; 
+const uint8_t kDefaultValueChar = UCHAR_MAX;
 
 
 const uint32_t kFlagWebDeliveryAllowed = 1;
@@ -45,8 +45,8 @@ class HlsEntry {
     kExtSignalReturn,
   };
   enum class SpliceType {
-    kLiveDAI,        
-    kALTCON,         
+    kLiveDAI,
+    kALTCON,
   };
 
   virtual ~HlsEntry();
@@ -167,20 +167,20 @@ class MediaPlaylist {
   virtual void AddPlacementOpportunity();
 
   /// Add #EXT-X-SIGNAL_EXIT for Charter DAI program exit at ad break start
-  /// 
-  virtual void AddSignalExit(HlsEntry::SpliceType type, 
-                             double duration, 
+  ///
+  virtual void AddSignalExit(HlsEntry::SpliceType type,
+                             double duration,
                              uint32_t eventid,
                              std::string upid,
                              uint8_t seg_type_id,
                              uint32_t flags);
 
   /// Add #EXT-X-SIGNAL_SPAN for Charter DAI ad break segements during break
-  /// 
+  ///
   virtual void AddSignalSpan(HlsEntry::SpliceType type, double position, double duration);
 
   /// Add #EXT-X-SIGNAL_RETURN for Charter DAI ad break return to program
-  /// 
+  ///
   virtual void AddSignalReturn(HlsEntry::SpliceType type, double duration);
 
   /// Write the playlist to |file_path|.
@@ -224,6 +224,12 @@ class MediaPlaylist {
   /// @return true if |width| and |height| have been set with a valid
   ///         resolution values.
   virtual bool GetDisplayResolution(uint32_t* width, uint32_t* height) const;
+
+  /// @return The video range of the stream.
+  virtual std::string GetVideoRange() const;
+
+  /// @return the frame rate.
+  virtual double GetFrameRate() const;
 
   /// @return the language of the media, as an ISO language tag in its shortest
   ///         form.  May be an empty string for video.
