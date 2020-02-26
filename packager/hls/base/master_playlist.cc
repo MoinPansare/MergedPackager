@@ -192,7 +192,6 @@ void BuildStreamInfTag(const MediaPlaylist& playlist,
 
   std::string tag_name;
   switch (playlist.stream_type()) {
-    case MediaPlaylist::MediaPlaylistStreamType::kAudio:
     case MediaPlaylist::MediaPlaylistStreamType::kVideo:
       tag_name = "#EXT-X-STREAM-INF";
       break;
@@ -220,19 +219,8 @@ void BuildStreamInfTag(const MediaPlaylist& playlist,
 
   uint32_t width;
   uint32_t height;
-  if (playlist.GetDisplayResolution(&width, &height)) {
-    tag.AddNumberPair("RESOLUTION", width, 'x', height);
-
-    // Right now the frame-rate returned may not be accurate in some scenarios.
-    // TODO(kqyang): Fix frame-rate computation.
-    const double frame_rate = playlist.GetFrameRate();
-    if (frame_rate > 0)
-      tag.AddFloat("FRAME-RATE", frame_rate);
-
-    const std::string video_range = playlist.GetVideoRange();
-    if (!video_range.empty())
-      tag.AddString("VIDEO-RANGE", video_range);
-  }
+  CHECK(playlist.GetDisplayResolution(&width, &height));
+  tag.AddNumberPair("RESOLUTION", width, 'x', height);
 
   if (variant.audio_group_id) {
     tag.AddQuotedString("AUDIO", *variant.audio_group_id);
@@ -413,23 +401,6 @@ void AppendPlaylists(const std::string& default_audio_language,
     for (const auto& playlist : iframe_playlists) {
       // I-Frame playlists do not have variant. Just use the default.
       BuildStreamInfTag(*playlist, Variant(), base_url, content);
-    }
-  }
-
-  // Generate audio-only master playlist when there are no videos and subtitles.
-  if (!audio_playlist_groups.empty() && video_playlists.empty() &&
-      subtitle_playlist_groups.empty()) {
-    content->append("\n");
-    for (const auto& playlist_group : audio_playlist_groups) {
-      Variant variant;
-      // Populate |audio_group_id|, which will be propagated to "AUDIO" field.
-      // Leaving other fields, e.g. xxx_audio_bitrate in |Variant|, as
-      // null/empty/zero intentionally as the information is already available
-      // in audio |playlist|.
-      variant.audio_group_id = &playlist_group.first;
-      for (const auto& playlist : playlist_group.second) {
-        BuildStreamInfTag(*playlist, variant, base_url, content);
-      }
     }
   }
 }

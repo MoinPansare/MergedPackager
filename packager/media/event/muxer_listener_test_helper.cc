@@ -15,14 +15,13 @@ namespace media {
 VideoStreamInfoParameters::VideoStreamInfoParameters() {}
 VideoStreamInfoParameters::~VideoStreamInfoParameters() {}
 
-std::shared_ptr<VideoStreamInfo> CreateVideoStreamInfo(
+std::shared_ptr<StreamInfo> CreateVideoStreamInfo(
     const VideoStreamInfoParameters& param) {
   return std::make_shared<VideoStreamInfo>(
       param.track_id, param.time_scale, param.duration, param.codec,
       H26xStreamFormat::kUnSpecified, param.codec_string,
       param.codec_config.data(), param.codec_config.size(), param.width,
       param.height, param.pixel_width, param.pixel_height,
-      0,  // transfer_characteristics
       0,  // trick_play_factor
       param.nalu_length_size, param.language, param.is_encrypted);
 }

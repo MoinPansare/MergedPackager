@@ -38,8 +38,6 @@ class MockHlsNotifier : public hls::HlsNotifier {
                     const std::string& name,
                     const std::string& group_id,
                     uint32_t* stream_id));
-  MOCK_METHOD2(NotifySampleDuration,
-               bool(uint32_t stream_id, uint32_t sample_duration));
   MOCK_METHOD6(NotifyNewSegment,
                bool(uint32_t stream_id,
                     const std::string& segment_name,
@@ -52,7 +50,7 @@ class MockHlsNotifier : public hls::HlsNotifier {
                     uint64_t timestamp,
                     uint64_t start_byte_offset,
                     uint64_t size));
-  MOCK_METHOD2(NotifyCueEvent, bool(uint32_t stream_id, uint64_t timestamp));
+  MOCK_METHOD3(NotifyCueEvent, bool(uint32_t stream_id, uint64_t timestamp,const shaka::media::CueEvent* cue_event));
   MOCK_METHOD5(
       NotifyEncryptionUpdate,
       bool(uint32_t stream_id,
@@ -312,18 +310,8 @@ TEST_F(HlsNotifyMuxerListenerTest, OnEncryptionInfoReadyWithProtectionScheme) {
                          MuxerListener::kContainerMpeg2ts);
 }
 
+// Make sure it doesn't crash.
 TEST_F(HlsNotifyMuxerListenerTest, OnSampleDurationReady) {
-  ON_CALL(mock_notifier_, NotifyNewStream(_, _, _, _, _))
-      .WillByDefault(Return(true));
-  VideoStreamInfoParameters video_params = GetDefaultVideoStreamInfoParams();
-  std::shared_ptr<StreamInfo> video_stream_info =
-      CreateVideoStreamInfo(video_params);
-  MuxerOptions muxer_options;
-  muxer_options.segment_template = "$Number$.mp4";
-  listener_.OnMediaStart(muxer_options, *video_stream_info, 90000,
-                         MuxerListener::kContainerMpeg2ts);
-
-  EXPECT_CALL(mock_notifier_, NotifySampleDuration(_, 2340));
   listener_.OnSampleDurationReady(2340);
 }
 
@@ -338,12 +326,12 @@ TEST_F(HlsNotifyMuxerListenerTest, OnNewSegmentAndCueEvent) {
   listener_.OnMediaStart(muxer_options, *video_stream_info, 90000,
                          MuxerListener::kContainerMpeg2ts);
 
-  EXPECT_CALL(mock_notifier_, NotifyCueEvent(_, kCueStartTime));
+  EXPECT_CALL(mock_notifier_, NotifyCueEvent(_, kCueStartTime, nullptr));
   EXPECT_CALL(
       mock_notifier_,
       NotifyNewSegment(_, StrEq("new_segment_name10.ts"), kSegmentStartTime,
                        kSegmentDuration, _, kSegmentSize));
-  listener_.OnCueEvent(kCueStartTime, "dummy cue data");
+  //listener_.OnCueEvent(kCueStartTime, "dummy cue data");
   listener_.OnNewSegment("new_segment_name10.ts", kSegmentStartTime,
                          kSegmentDuration, kSegmentSize);
 }
@@ -361,11 +349,11 @@ TEST_F(HlsNotifyMuxerListenerTest, NoSegmentTemplateOnMediaEnd) {
   listener_.OnMediaStart(muxer_options, *video_stream_info, 90000,
                          MuxerListener::kContainerMpeg2ts);
 
-  listener_.OnCueEvent(kCueStartTime, "dummy cue data");
+  //listener_.OnCueEvent(kCueStartTime, "dummy cue data");
   listener_.OnNewSegment("filename.mp4", kSegmentStartTime, kSegmentDuration,
                          kSegmentSize);
 
-  EXPECT_CALL(mock_notifier_, NotifyCueEvent(_, kCueStartTime));
+  EXPECT_CALL(mock_notifier_, NotifyCueEvent(_, kCueStartTime, nullptr));
   EXPECT_CALL(
       mock_notifier_,
       NotifyNewSegment(_, StrEq("filename.mp4"), kSegmentStartTime,
@@ -394,13 +382,13 @@ TEST_F(HlsNotifyMuxerListenerTest, NoSegmentTemplateOnMediaEndTwice) {
                          MuxerListener::kContainerMpeg2ts);
   listener_.OnNewSegment("filename1.mp4", kSegmentStartTime, kSegmentDuration,
                          kSegmentSize);
-  listener_.OnCueEvent(kCueStartTime, "dummy cue data");
+  //listener_.OnCueEvent(kCueStartTime, "dummy cue data");
 
   EXPECT_CALL(mock_notifier_, NotifyNewStream(_, _, _, _, _))
       .WillOnce(Return(true));
   EXPECT_CALL(mock_notifier_, NotifyNewSegment(_, StrEq("filename1.mp4"),
                                                kSegmentStartTime, _, _, _));
-  EXPECT_CALL(mock_notifier_, NotifyCueEvent(_, kCueStartTime));
+  EXPECT_CALL(mock_notifier_, NotifyCueEvent(_, kCueStartTime, nullptr));
   listener_.OnMediaEnd(
       GetMediaRanges(
           {{kSegmentStartOffset, kSegmentStartOffset + kSegmentSize - 1}}),
