@@ -353,7 +353,7 @@ class SignalExitEntry : public HlsEntry {
   minads_(minads),
 
   // TODO(ecl): key_values will need to be replaced by a container type
-  key_values_(key_values);
+  key_values_(key_values){};
 
 
   std::string ToString() override;
@@ -457,7 +457,7 @@ class SignalSpanEntry : public HlsEntry {
   mind_(mind),
   maxads_(maxads),
   minads_(minads),
-  key_values_(key_values);
+  key_values_(key_values){};
 
   std::string ToString() override;
 
