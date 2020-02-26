@@ -320,22 +320,40 @@ class SignalExitEntry : public HlsEntry {
  public:
 
   SignalExitEntry(
-    SpliceType type,
-    double duration,
-    uint32_t eventid,
-    std::string upid,
-    uint8_t segment_type_id,
-    uint32_t flags,
+    SpliceType type=SpliceType::kLiveDAI,
+    double duration=hls::kDefaultValueLong,
+    uint32_t eventid=hls::kDefaultValueInt,
+    std::string upid="",
+    uint8_t segment_type_id=hls::kDefaultValueChar,
+    uint32_t flags=0,
 
     // these are less used parameters so putting them at end as default/optionals
-    std::string signalId,
-    std::string paid,
-    uint64_t maxd,
-    uint64_t mind,
-    uint64_t maxads,
-    uint64_t minads,
-    std::string key_values
-  );
+
+    std::string signalId="",
+    std::string paid="",
+    uint64_t maxd=hls::kDefaultValueLong,
+    uint64_t mind=hls::kDefaultValueLong,
+    uint64_t maxads=hls::kDefaultValueLong,
+    uint64_t minads=hls::kDefaultValueLong,
+    std::string key_values=""
+
+  ): HlsEntry(HlsEntry::EntryType::kExtSignalExit),
+  spliceType_(type),
+  duration_(duration),
+  eventid_(eventid),
+  upid_(upid),
+  segment_type_id_(segment_type_id),
+  flags_(flags),
+
+  signalId_(signalId),
+  paid_(paid),
+  maxd_(maxd),
+  mind_(mind),
+  maxads_(maxads),
+  minads_(minads),
+
+  // TODO(ecl): key_values will need to be replaced by a container type
+  key_values_(key_values);
 
 
   std::string ToString() override;
@@ -364,77 +382,6 @@ class SignalExitEntry : public HlsEntry {
 
 // #EXT-X-SIGNAL-EXIT[:Duration], SpliceType=spliceType, [SignalId=signalId,] [Paid=providerID/assetID,]
 // [MaxD=maxd, MinD=mind, Maxads=maxads, MinAds=minads],key1=value1,…keyN=valueN,Acds=(FW, BA)
-
-SignalExitEntry::SignalExitEntry(
-    SpliceType type=SpliceType::kLiveDAI,
-    double duration=hls::kDefaultValueLong,
-    uint32_t eventid=hls::kDefaultValueInt,
-    std::string upid="",
-    uint8_t segment_type_id=hls::kDefaultValueChar,
-    uint32_t flags=0,
-
-    std::string signalId="",
-    std::string paid="",
-    uint64_t maxd=hls::kDefaultValueLong,
-    uint64_t mind=hls::kDefaultValueLong,
-    uint64_t maxads=hls::kDefaultValueLong,
-    uint64_t minads=hls::kDefaultValueLong,
-    std::string key_values=""
-  )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalExit),
-    spliceType_(type),
-    duration_(duration),
-    eventid_(eventid),
-    upid_(upid),
-    segment_type_id_(segment_type_id),
-    flags_(flags),
-
-    signalId_(signalId),
-    paid_(paid),
-    maxd_(maxd),
-    mind_(mind),
-    maxads_(maxads),
-    minads_(minads),
-
-    // TODO(ecl): key_values will need to be replaced by a container type
-    key_values_(key_values)
-    {}
-
-
-SignalExitEntry::SignalExitEntry(
-  SpliceType type,
-  double duration,
-  uint32_t eventid,
-  std::string upid,
-  uint8_t segment_type_id,
-  uint32_t flags,
-
-  std::string signalId,
-  std::string paid,
-  uint64_t maxd,
-  uint64_t mind,
-  uint64_t maxads,
-  uint64_t minads,
-  std::string key_values
-  )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalExit),
-    spliceType_(type),
-    duration_(duration),
-    eventid_(eventid),
-    upid_(upid),
-    segment_type_id_(segment_type_id),
-    flags_(flags),
-
-    signalId_(signalId),
-    paid_(paid),
-    maxd_(maxd),
-    mind_(mind),
-    maxads_(maxads),
-    minads_(minads),
-
-    // TODO(ecl): key_values will need to be replaced by a container type
-    key_values_(key_values)
-    {}
 
 std::string SignalExitEntry::ToString() {
   std::string tag_string;
@@ -490,17 +437,27 @@ std::string SignalExitEntry::ToString() {
 class SignalSpanEntry : public HlsEntry {
  public:
   SignalSpanEntry(
-    SpliceType,
-    double,
-    double,
-    std::string,
-    std::string,
-    uint64_t,
-    uint64_t,
-    uint64_t,
-    uint64_t,
-    std::string
-  );
+    SpliceType type=SpliceType::kLiveDAI,
+    double position=0,
+    double duration=hls::kDefaultValueLong,
+    std::string signalId="",
+    std::string paid="",
+    uint64_t maxd=hls::kDefaultValueLong,
+    uint64_t mind=hls::kDefaultValueLong,
+    uint64_t maxads=hls::kDefaultValueLong,
+    uint64_t minads=hls::kDefaultValueLong,
+    std::string key_values=""
+  ): HlsEntry(HlsEntry::EntryType::kExtSignalSpan),
+  spliceType_(type),
+  position_(position),
+  duration_(duration),
+  signalId_(signalId),
+  paid_(paid),
+  maxd_(maxd),
+  mind_(mind),
+  maxads_(maxads),
+  minads_(minads),
+  key_values_(key_values);
 
   std::string ToString() override;
 
@@ -524,60 +481,6 @@ class SignalSpanEntry : public HlsEntry {
 // #EXT-X-SIGNAL-SPAN:SecondsFromSignal[/Duration], SpliceType=spliceType, [SignalId=signalId,]
 // [Paid=providerId/assetId,] [MaxD=maxd, MinD=mind, MaxAds=maxads, MinAds=minads,]
 // key1=value1,…keyN=valueN,Acds=(FW, BA)
-
-SignalSpanEntry::SignalSpanEntry(
-    SpliceType type=SpliceType::kLiveDAI,
-    double position=0,
-    double duration=hls::kDefaultValueLong,
-    std::string signalId="",
-    std::string paid="",
-    uint64_t maxd=hls::kDefaultValueLong,
-    uint64_t mind=hls::kDefaultValueLong,
-    uint64_t maxads=hls::kDefaultValueLong,
-    uint64_t minads=hls::kDefaultValueLong,
-    std::string key_values=""
-
-  )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalSpan),
-    spliceType_(type),
-    position_(position),
-    duration_(duration),
-    signalId_(signalId),
-    paid_(paid),
-    maxd_(maxd),
-    mind_(mind),
-    maxads_(maxads),
-    minads_(minads),
-    key_values_(key_values)
-
-    {}
-
-SignalSpanEntry::SignalSpanEntry(
-    SpliceType type,
-    double position,
-    double duration,
-    std::string signalId,
-    std::string paid,
-    uint64_t maxd,
-    uint64_t mind,
-    uint64_t maxads,
-    uint64_t minads,
-    std::string key_values
-
-  )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalSpan),
-    spliceType_(type),
-    position_(position),
-    duration_(duration),
-    signalId_(signalId),
-    paid_(paid),
-    maxd_(maxd),
-    mind_(mind),
-    maxads_(maxads),
-    minads_(minads),
-    key_values_(key_values)
-
-    {}
 
 std::string SignalSpanEntry::ToString() {
   std::string tag_string;
@@ -621,9 +524,11 @@ std::string SignalSpanEntry::ToString() {
 class SignalReturnEntry : public HlsEntry {
  public:
   SignalReturnEntry(
-    SpliceType,
-    double
-  );
+    SpliceType type=SpliceType::kLiveDAI,
+    double duration=hls::kDefaultValueLong
+  ): HlsEntry(HlsEntry::EntryType::kExtSignalReturn),
+  spliceType_(type),
+  duration_(duration);
 
   std::string ToString() override;
 
@@ -636,24 +541,6 @@ class SignalReturnEntry : public HlsEntry {
   double duration_;
 };
 
-// #EXT-X-SIGNAL-RETURN[:Duration], SpliceType=spliceType
-SignalReturnEntry::SignalReturnEntry(
-    SpliceType type=SpliceType::kLiveDAI,
-    double duration=hls::kDefaultValueLong
-  )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalReturn),
-    spliceType_(type),
-    duration_(duration)
-    {}
-
-SignalReturnEntry::SignalReturnEntry(
-    SpliceType type,
-    double duration
-  )
-    : HlsEntry(HlsEntry::EntryType::kExtSignalReturn),
-    spliceType_(type),
-    duration_(duration)
-    {}
 
 std::string SignalReturnEntry::ToString() {
   std::string tag_string;
