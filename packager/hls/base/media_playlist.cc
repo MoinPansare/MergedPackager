@@ -366,7 +366,7 @@ class SignalExitEntry : public HlsEntry {
 // [MaxD=maxd, MinD=mind, Maxads=maxads, MinAds=minads],key1=value1,…keyN=valueN,Acds=(FW, BA)
 
 SignalExitEntry::SignalExitEntry(
-    // SpliceType type=SpliceType::kLiveDAI,
+    SpliceType type=SpliceType::kLiveDAI,
     double duration=hls::kDefaultValueLong,
     uint32_t eventid=hls::kDefaultValueInt,
     std::string upid="",
@@ -490,7 +490,7 @@ class SignalSpanEntry : public HlsEntry {
 // key1=value1,…keyN=valueN,Acds=(FW, BA)
 
 SignalSpanEntry::SignalSpanEntry(
-    // SpliceType type=SpliceType::kLiveDAI,
+    SpliceType type=SpliceType::kLiveDAI,
     double position=0,
     double duration=hls::kDefaultValueLong,
     std::string signalId="",
@@ -576,7 +576,7 @@ class SignalReturnEntry : public HlsEntry {
 // #EXT-X-SIGNAL-RETURN[:Duration], SpliceType=spliceType
 
 SignalReturnEntry::SignalReturnEntry(
-    // SpliceType type=SpliceType::kLiveDAI,
+    SpliceType type=SpliceType::kLiveDAI,
     double duration=hls::kDefaultValueLong
   )
     : HlsEntry(HlsEntry::EntryType::kExtSignalReturn),
