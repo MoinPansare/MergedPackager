@@ -87,15 +87,11 @@ MuxerListenerFactory::StreamData ToMuxerListenerData(
     const StreamDescriptor& stream) {
   MuxerListenerFactory::StreamData data;
   data.media_info_output = stream.output;
-
   data.hls_group_id = stream.hls_group_id;
   data.hls_name = stream.hls_name;
   data.hls_playlist_name = stream.hls_playlist_name;
   data.hls_iframe_playlist_name = stream.hls_iframe_playlist_name;
   data.hls_characteristics = stream.hls_characteristics;
-
-  data.dash_accessiblities = stream.dash_accessiblities;
-  data.dash_roles = stream.dash_roles;
   return data;
 };
 
@@ -210,8 +206,7 @@ Status ValidateStreamDescriptor(bool dump_stream_info,
 
   if (output_format == CONTAINER_UNKNOWN) {
     return Status(error::INVALID_ARGUMENT, "Unsupported output format.");
-  }
-  if (output_format == MediaContainerName::CONTAINER_MPEG2TS) {
+  } else if (output_format == MediaContainerName::CONTAINER_MPEG2TS) {
     if (stream.segment_template.empty()) {
       return Status(
           error::INVALID_ARGUMENT,
@@ -356,8 +351,9 @@ bool StreamDescriptorCompareFn(const StreamDescriptor& a,
       // The MPD notifier requires that the main track comes first, so make
       // sure that happens.
       return a.trick_play_factor < b.trick_play_factor;
+    } else {
+      return a.stream_selector < b.stream_selector;
     }
-    return a.stream_selector < b.stream_selector;
   }
 
   return a.input < b.input;
@@ -690,9 +686,10 @@ Status CreateAudioVideoJobs(
 
     RETURN_IF_ERROR(
         CreateDemuxer(stream, packaging_params, &sources[stream.input]));
-    cue_aligners[stream.input] =
-        sync_points ? std::make_shared<CueAlignmentHandler>(sync_points)
-                    : nullptr;
+
+    //cue_aligners[stream.input] = std::make_shared<CueAlignmentHandler>(nullptr);
+    if (packaging_params.hls_params.playlist_type == HlsPlaylistType::kLive)
+      cue_aligners[stream.input] = std::make_shared<CueAlignmentHandler>(sync_points);
   }
 
   for (auto& source : sources) {
@@ -738,14 +735,15 @@ Status CreateAudioVideoJobs(
                                                encryption_key_source);
 
       // TODO(vaage) : Create a nicer way to connect handlers to demuxers.
+
       if (sync_points) {
         RETURN_IF_ERROR(
             MediaHandler::Chain({cue_aligner, chunker, encryptor, replicator}));
         RETURN_IF_ERROR(
             demuxer->SetHandler(stream.stream_selector, cue_aligner));
       } else {
-        RETURN_IF_ERROR(MediaHandler::Chain({chunker, encryptor, replicator}));
-        RETURN_IF_ERROR(demuxer->SetHandler(stream.stream_selector, chunker));
+        RETURN_IF_ERROR(MediaHandler::Chain({cue_aligner, chunker, encryptor, replicator}));
+        RETURN_IF_ERROR(demuxer->SetHandler(stream.stream_selector, cue_aligner));
       }
     }
 
@@ -903,8 +901,10 @@ Status Packager::Initialize(
   // DASH approximate segment timeline.
   const double target_segment_duration =
       packaging_params.chunking_params.segment_duration_in_seconds;
-  mpd_params.target_segment_duration = target_segment_duration;
-  hls_params.target_segment_duration = target_segment_duration;
+  if (mpd_params.target_segment_duration != 0)
+    mpd_params.target_segment_duration = target_segment_duration;
+  if (hls_params.target_segment_duration != 0)
+    hls_params.target_segment_duration = target_segment_duration;
 
   // Store callback params to make it available during packaging.
   internal->buffer_callback_params = packaging_params.buffer_callback_params;
@@ -946,9 +946,21 @@ Status Packager::Initialize(
 
   std::unique_ptr<SyncPointQueue> sync_points;
   if (!packaging_params.ad_cue_generator_params.cue_points.empty()) {
-    sync_points.reset(
-        new SyncPointQueue(packaging_params.ad_cue_generator_params));
+
+    if (packaging_params.hls_params.playlist_type == HlsPlaylistType::kVod) { 
+      sync_points.reset(
+          new SyncPointQueue(packaging_params.ad_cue_generator_params));  
+    }
+    else
+      return Status(error::INVALID_ARGUMENT,"ad_cues parameter ignored, not supported for live playlist type");
   }
+  else 
+  if (packaging_params.hls_params.playlist_type == HlsPlaylistType::kLive) {
+
+    // Create a null sync_point ptr. This will inform the cue handler to create a separate SyncPointQueue for each handler
+    sync_points.reset(nullptr);
+  }
+
   internal->job_manager.reset(new JobManager(std::move(sync_points)));
 
   std::vector<StreamDescriptor> streams_for_jobs;
